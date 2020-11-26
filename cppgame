@@ -1,0 +1,279 @@
+#include <iostream>
+#include <cstring>
+#include <cstdlib>
+#include <ctime>
+
+
+using namespace std;
+
+/* run this program using the console pauser or add your own getch, system("pause") or input loop */
+
+class Game{
+	public:
+		virtual int getX()=0;
+		virtual int getY()=0;
+		virtual void move()=0;
+};
+class Human:public Game{
+	private:
+		int x, y;
+	public:
+		Human(int x=2,int y=2):x(x),y(y){ //인간은 중앙위치 리스폰 
+		}
+		int getX(){
+			return x;
+		}
+		int getY(){
+			return y;
+		}
+		void move(){
+			char ch;
+			cout<<"W,S,A,D 키를 사용하여 원하는 방향으로 이동하세요"<<endl;
+			cin>>ch;
+			switch(ch){
+				case 'w': //forward 
+					if(x>0){
+						x--;
+					}else{
+						cout<<"이동 불가"<<endl;
+					}
+					break;
+				case 's': //backward
+					if(x<5){
+						x++;
+					}else{
+						cout<<"이동 불가"<<endl;
+					}
+					break;
+				case 'a': //left
+					if(y>0){
+						y--;
+					}else{
+						cout<<"이동 불가"<<endl;
+					}
+					break;
+				case 'd': //right
+					if(y<5){
+						y++;
+					}else{
+						cout<<"이동 불가"<<endl;
+					}
+					break;
+			}
+		}
+};
+class Monster:public Game{
+	private:
+		int x, y;
+	public:
+		Monster(){ //몬스터 생성위치 각 코너중 랜덤 리스폰 
+			int pos=rand()%4;
+			switch(pos){
+				case 1:
+					x=0; y=0;
+					break;
+				case 2:
+					x=5; y=0;
+					break;
+				case 3:
+					x=5; y=5;
+					break;
+				case 4:
+					x=0; y=5;
+					break;
+			}
+		}
+		int getX(){
+			return x;
+		}
+		int getY(){
+			return y;
+		}
+		void move(){
+			srand((unsigned)time(0));
+			int pos=rand()%4;
+			switch(pos){
+				case 1: //forward
+					if(y<4){
+						y+=2;
+					}else if(y<5){
+						y++;
+					}else{
+						cout<<"이동 불가"<<endl;
+					}
+					break;
+				case 2: //backward
+					if(y>1){
+						y-=2;
+					}else if(y>0){
+						y--;
+					}else{
+						cout<<"이동 불가"<<endl;
+					}
+					break;
+				case 3: //left
+					if(x>1){
+						x-=2;
+					}else if(x>0){
+						x--;
+					}else{
+						cout<<"이동 불가"<<endl;
+					}
+					break;
+				case 4: //right
+					if(x<4){
+						x+=2;
+					}else if(x<5){
+						x++;
+					}else{
+						cout<<"이동 불가"<<endl;
+					}
+					break;
+			}
+		}
+};
+class Food:public Game{
+	private:
+		int x, y;
+	public:
+		Food(){ //food위치 랜덤 생성 
+			x=rand()%5;
+			y=rand()%5;
+		}
+		int getX(){
+			return x;
+		}
+		int getY(){
+			return y;
+		}
+		void move(){
+			srand((unsigned)time(0));
+			for(int i=0;i<5;i++){
+				if(i>2){
+					int pos=rand()%4;
+					switch(pos){
+						case 1: //forward
+							if(y<5){
+								y++;
+							}else{
+								cout<<"이동 불가"<<endl;
+							}
+							break;
+						case 2: //backward
+							if(y>0){
+								y--;
+							}else{
+								cout<<"이동 불가"<<endl;
+							}
+							break;
+						case 3: //left
+							if(x>0){
+								x--;
+							}else{
+								cout<<"이동 불가"<<endl;
+							}
+							break;
+						case 4: //right
+							if(x<5){
+								x++;
+							}else{
+								cout<<"이동 불가"<<endl;
+							}
+							break;
+					}
+				}
+			}
+		}
+};
+class Map:public Human,public Monster,public Food{
+	private:
+		int hx,hy,mx,my,fx,fy;
+		char ary[5][5];
+		bool result;
+	public:
+		Human h;
+		Monster m;
+		Food f;
+		Map(){
+			hx=h.getX();
+			hy=h.getY();
+			mx=m.getX();
+			my=m.getY();
+			fx=f.getX();
+			fy=f.getY();
+			result=true;
+			for(int i=0;i<5;i++){
+				for(int j=0;j<5;j++){
+					ary[i][j]='-';
+				}
+			}
+			ary[hx][hy]='H';
+			ary[mx][my]='M';
+			ary[fx][fy]='F';
+		}
+		void show(){
+			for(int i=0;i<5;i++){
+				for(int j=0;j<5;j++){
+					ary[i][j]='-';
+				}
+			}
+			ary[hx][hy]='H';
+			ary[mx][my]='M';
+			ary[fx][fy]='F';
+			for(int i=0;i<5;i++){
+				for(int j=0;j<5;j++){
+					cout<<ary[i][j]<<' ';
+				}
+				cout<<endl;
+			}
+		}
+		void move(){
+			h.move();
+			f.move();
+			m.move();
+			hx=h.getX();
+			hy=h.getY();
+			mx=m.getX();
+			my=m.getY();
+			fx=f.getX();
+			fy=f.getY();
+			if(mx==hx && my==hy){ //몬스터가 사람을 잡으면 
+				cout<<"Monster Win!!"<<endl;
+				result=false;
+			}else if(mx==fx && my==fy){ //몬스터가 음식을 먹으면 
+				cout<<"Monster Win!!"<<endl;
+				result=false;
+			}else{
+				result=true;
+			}
+			if(hx==fx && hy==fy){ //사람이 음식을 먹으면
+				cout<<"Human Win!!"<<endl;
+				result=false; 
+			}else{
+				result=true;
+			}
+		}
+		bool getResult(){
+			return result;
+		}
+};
+
+
+
+
+int main(int argc, char** argv) {
+	
+	Map m;
+	m.show();
+	while(m.getResult()==true){
+		m.move();
+		m.show();
+		m.getResult();
+	}
+	
+	
+	
+	
+	
+	return 0;
+}
